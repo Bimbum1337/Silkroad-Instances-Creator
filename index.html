@@ -1,0 +1,260 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>AAAAAAAAAAAAAAAA	</title>
+
+		<link type="text/css" rel="stylesheet" href="style.css">
+		<link type="text/css" rel="stylesheet" href="mframe.css">
+
+		<script src="./vue.js"></script>
+		<script src="./app.js"></script>
+		<script src="./component.js"></script>
+
+
+	</head>
+
+	<body>
+		<div id="preloader"></div>
+
+		<div id="all" style="height:100%;width:100%;position: relative;">
+
+			<div class="custom-select" style="margin-top: 25px;text-align: center;">
+				<div class="form-item" style="position: absolute;top:0px;right:40%;width:20%;height:0%">>
+						<p style ="color:Black; font-weight: bold">Instance Unique Name:</p>
+						<input v-model="instanceName" type="text"></input>
+						<p v-show="errorMsg" style ="color:Red; font-weight: bold">AN ERROR OCCURED INSTANCE NAME MUST BE NOT NULL OR INSTANCE ALREADY EXISTS......</p>
+				</div>
+			  <select  @change = "OnSelectClass">
+					<option disabled value="">Please select one</option>
+					<option value="1">CIFButton</option>
+					<option value="2">CIFEdit</option>
+					<option value="3">CIFStatic</option>
+			  </select>
+				<button @click="add" class="btn-primary"  style="margin-top: 100px; width:120;height:25px" >Add</button>
+			</div>
+
+			<select @change = "OnSelectInstance" style ="margin-bottom: 15px; margin-left: 120px">
+				<option disabled value="">Please select one</option>
+				<option  v-for='(win,index) in settings' :value='index'>{{win.name}}</option>
+			</select>
+
+			<div style="margin-left: 15px">
+				<div class="form-item" style="width:350">
+						<p style ="color:Black; font-weight: bold">Window Title:</p>
+						<input v-model="settings[selectedIndex].title" type="text"></input>
+				</div>
+
+				<div class="form-item" style="width:350">
+						<p style ="color:Black; font-weight: bold">Window Width:</p>
+						<input v-model="settings[selectedIndex].width" type="text"></input>
+				</div>
+
+				<div class="form-item" style="width:350">
+					<p style ="color:Black; font-weight: bold">Window height:</p>
+					<input v-model="settings[selectedIndex].height" type="text"></input>
+				</div>
+			</div>
+
+
+			<sro-window  :visible="titleWindow" :title="settings[0].title" :height="parseInt(settings[0].height)" :width="parseInt(settings[0].width)" @hide="titleWindow=false">
+				<template v-for="(win,index) in settings">
+						<div v-drag-ch style="position: absolute;">
+					    		<div v-if="win.id == 1"  >
+										<sro-btn :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-btn>
+									</div>
+									<div v-else-if="win.id == 2">
+										<sro-edit :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-edit>
+									</div>
+									<div v-else-if="win.id == 3">
+										<sro-static :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-static>
+									</div>
+						</div>
+				</template>
+			</sro-window>
+
+			<div class="form-item" style="position: absolute;width:250px;top:0px;right:8%;height:0%">>
+				<p style ="color:Black; font-weight: bold">Class Name:</p>
+					<input v-model="className" type="text"></input>
+					<br></br>
+					<hr></hr>
+					<span style="color:black">{{className.substring(1) + '.h'}}</span>
+					<br>
+					<textarea placeholder="add multiple lines">
+						#pragma once
+						#include <IFMainFrame.h>
+						#include <IFNormalTile.h>
+						#include <IFButton.h>
+						#include <IFEdit.h>
+						#include <IFStatic.h>
+
+						class {{className}} : public CIFMainFrame
+						{
+								GFX_DECLARE_DYNCREATE({{className}})
+								GFX_DECLARE_MESSAGE_MAP({{className}})
+						public:
+								{{className}}(void);
+								~{{className}}(void);
+
+								bool OnCreate(long ln) override;
+								void OnUpdate() override;
+						private:
+								CIFNormalTile* m_tile;
+								{{getInstances()}}
+						};
+					</textarea>
+					<br></br>
+					<hr></hr>
+					<span style="color:black">{{className.substring(1) + '.cpp'}}</span>
+					<br>
+					<textarea placeholder="add multiple lines">
+						#include "{{className.substring(1)}}.h"
+
+						GFX_IMPLEMENT_DYNCREATE({{className}}, CIFMainFrame)
+						GFX_BEGIN_MESSAGE_MAP({{className}}, CIFMainFrame)
+						GFX_END_MESSAGE_MAP()
+
+						{{className}}::{{className}}(void)
+						{
+						}
+						{{className}}::~{{className}}(void)
+						{
+						}
+						bool {{className}}::OnCreate(long ln)
+						{
+						    CIFMainFrame::OnCreate(ln);
+
+						    RECT m_tileRect = { 32,44,{{settings[0].width -64}},{{settings[0].width -68}} };
+						    m_tile = (CIFNormalTile*)CGWnd::CreateInstance(this, GFX_RUNTIME_CLASS(CIFNormalTile), m_tileRect, 2, 0);
+						    m_tile->TB_Func_13("interface\\ifcommon\\bg_tile\\com_bg_tile_a.ddj", 0, 0);
+
+								{{getInstancesText()}}
+
+						    TB_Func_13("interface\\frame\\mframe_wnd_", 0, 0);
+						    SetText(L"{{settings[0].title}}");
+						    return true;
+						}
+
+
+						void {{className}}::OnUpdate()
+						{
+
+						}
+					</textarea>
+			</div>
+
+
+		</div>
+
+	</body>
+	<script>
+		var app = new Vue({
+			el: '#all',
+			data: {
+				titleWindow: true,
+				selectedIndex: 0,
+				instanceName: '',
+				errorMsg: false,
+				className:'CIFCustomTest',
+				message:'',
+				classId: 1,
+				settings : [
+					{id: 0,name: 'm_window',title: 'Main Window',width:350,height:350,posX:0,posY:0}
+				]
+			},
+			methods: {
+				add() {
+					if(this.instanceName.length <= 0)
+						this.errorMsg = true;
+					else
+					{
+						if(!this.isNameExists)
+							this.settings.push({id: this.classId,title: 'title',width: this.classId == 1 ? 120
+																																				 : this.classId == 2 ? 220
+																																				 : this.classId == 3 ? 150
+																																				 : 120
+							,height:30,name: this.instanceName,posX:5,posY:30});
+						else
+							this.errorMsg = true;
+					}
+				},
+				OnSelectInstance(event){
+						this.selectedIndex = event.target.value;
+				},
+				OnSelectClass(event){
+						this.classId = event.target.value;
+				},
+				isContainsClassId: function(classId){
+					let x = this.settings.find(e=> e.id === classId);
+					return this.settings.find(e=> e.id === classId);
+				},
+				getInstances: function(){
+					let text = "";
+					this.settings.forEach(item => {
+						if(item.id == 1)
+							text = text + "CIFButton* " + item.name + ';\n';
+						else if(item.id == 2)
+							text = text + "CIFEdit* " + item.name + ';\n';
+						else if(item.id == 3)
+							text = text + "CIFStatic* " + item.name +';\n';
+					});
+					return text;
+				},
+				getInstancesText: function()
+				{
+					let rect = "";
+					this.settings.forEach((item, i) => {
+						if(item.id >= 1)
+						{
+							let classname = item.id == 1 ?  "CIFButton" : item.id == 2 ? "CIFEdit" : "CIFStatic";
+
+						  rect	+= "RECT " + item.name +"Rect ={" + item.posX +","+item.posY+","+parseInt(item.width*0.8577)+","+parseInt(item.height)+"};\n"
+							rect 	+= item.name + " = ("+classname+"*)CGWnd::CreateInstance(this, GFX_RUNTIME_CLASS("+classname+"), "+item.name+"Rect, "+(i+2)+", 0);\n";
+							let ddj = item.id == 1 ? "\"interface\\\\ifcommon\\\\com_mid_button.ddj\"" : item.id == 2 ? "\"interface\\\\messagebox\\\\msgbox_gil_title.ddj\"" : "";
+							if(ddj.length > 0)
+								rect  += item.name + "->TB_Func_13("+ddj+", 0, 0);\n";
+							if(item.id == 3)
+							{
+								rect += ""+item.name+"->m_FontTexture.sub_8B4400(0, 0);\n"+item.name+"->m_FontTexture.sub_8B4750(0);\n"+item.name+"->TB_Func_5(0);\n"+item.name+"->TB_Func_6(0);\n"
+							}
+							rect 	+= item.name + "->SetText(L\"" + item.title + "\");\n\n";
+
+						}
+					});
+
+					return rect;
+				}
+			},
+			watch: {
+				instanceName: function (val1)
+				{
+					if(val1.length > 0)
+						this.errorMsg = false;
+				}
+			},
+			computed:{
+				isNameExists: function(){
+					return this.settings.find(e=> e.name === this.instanceName);
+				}
+
+			},
+			created() {
+				Event.$on("moveInstance", ({
+					e,el
+				}) => {
+					const index = this.settings.findIndex(p=> p.name === e.target.id);
+					if(index >= 0)
+					{
+						this.settings[index].posX = parseInt(( el.offsetLeft+10 + (this.settings[index].id == 2 ? 29 : 0) ) *0.8577);
+						this.settings[index].posX -= parseInt(this.settings[index].posX* 0.05);
+						this.settings[index].posY = parseInt(( el.offsetTop+50 + (this.settings[index].id == 2 ? 29 : 0)) *0.8091);
+						this.settings[index].posY -= parseInt(this.settings[index].posY*0.04);
+					}
+				})
+			},
+			})
+	</script>
+
+</html>

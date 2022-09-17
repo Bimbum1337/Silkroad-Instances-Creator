@@ -1,0 +1,90 @@
+
+.mframe-header:before{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 68px;
+	background:url(./image/mframe/wnd_left_up.PNG) no-repeat;
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+
+}
+.mframe-header-cur{
+	display: inline-block;
+	height: 68px;
+	background:url(./image/mframe/wnd_mid_up.PNG);
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-header-cur span{
+	line-height: 35px;
+}
+.mframe-header:after{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 68px;
+	background:url(./image/mframe/wnd_right_up.PNG) no-repeat;
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-footer:before{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 48px;
+	background:url(./image/mframe/wnd_left_down.PNG) no-repeat;
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-footer-cur{
+	display: inline-block;
+	width: 800px;
+	height: 48px;
+	background:url(./image/mframe/wnd_mid_down.PNG);
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-footer:after{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 48px;
+	background:url(./image/mframe/wnd_right_down.PNG) no-repeat;
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-content:before{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 100%;
+	background:url(./image/mframe/wnd_left_side.PNG);
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-content-cur{
+	display: inline-block;
+	height: 100%;
+	background:url(./image/com_bg_tile_a.PNG);
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
+.mframe-content:after{
+	content:"";
+	display: inline-block;
+	width: 40px;
+	height: 100%;
+	background:url(./image/mframe/wnd_right_side.PNG);
+	background-position :right center;
+	user-select:none;
+	-webkit-user-select:none;
+}
