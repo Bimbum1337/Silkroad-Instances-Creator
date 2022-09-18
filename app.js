@@ -12,8 +12,8 @@ Vue.directive('drag', {
 			y = e.clientY;
 			l = el.parentElement.offsetLeft;
 			t = el.parentElement.offsetTop;
-
 			isDown = true;
+
 			window.onmousemove = function(e) {
 
 				if (isDown == false) {
@@ -82,4 +82,5 @@ var moveInstance=function(e,el) {
 		el:el
 	})
 };
+
 window.onmousemove = move;

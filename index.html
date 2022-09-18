@@ -4,22 +4,22 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<title>AAAAAAAAAAAAAAAA	</title>
+		<title>Instance Creator v1.0.1</title>
 
 		<link type="text/css" rel="stylesheet" href="style.css">
 		<link type="text/css" rel="stylesheet" href="mframe.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 		<script src="./vue.js"></script>
 		<script src="./app.js"></script>
 		<script src="./component.js"></script>
 
-
 	</head>
 
 	<body>
-		<div id="preloader"></div>
+			<div id="preloader"></div>
 
-		<div id="all" style="height:100%;width:100%;position: relative;">
+			<div @click = "OnHideContext" id="all" style="height:100%;width:100%;position: relative;">
 
 			<div class="custom-select" style="margin-top: 25px;text-align: center;">
 				<div class="form-item" style="position: absolute;top:0px;right:40%;width:20%;height:0%">>
@@ -27,7 +27,8 @@
 						<input v-model="instanceName" type="text"></input>
 						<p v-show="errorMsg" style ="color:Red; font-weight: bold">AN ERROR OCCURED INSTANCE NAME MUST BE NOT NULL OR INSTANCE ALREADY EXISTS......</p>
 				</div>
-			  <select  @change = "OnSelectClass">
+
+			  <select @change = "OnSelectClass">
 					<option disabled value="">Please select one</option>
 					<option value="1">CIFButton</option>
 					<option value="2">CIFEdit</option>
@@ -36,15 +37,16 @@
 				<button @click="add" class="btn-primary"  style="margin-top: 100px; width:120;height:25px" >Add</button>
 			</div>
 
-			<select @change = "OnSelectInstance" style ="margin-bottom: 15px; margin-left: 120px">
+			<select id="instanceSelector" @change = "OnSelectInstance" style ="margin-bottom: 15px; margin-left: 120px">
 				<option disabled value="">Please select one</option>
-				<option  v-for='(win,index) in settings' :value='index'>{{win.name}}</option>
+				<option v-for='(win,index) in settings' :selected="win.selected === 1" :value='index'>{{win.name}}</option>
 			</select>
 
 			<div style="margin-left: 15px">
 				<div class="form-item" style="width:350">
 						<p style ="color:Black; font-weight: bold">Window Title:</p>
-						<input v-model="settings[selectedIndex].title" type="text"></input>
+						<input v-model="settings[selectedIndex].title" type="text" :style ="{color : this.settings[this.selectedIndex].color}"></input>
+						<input @change = "onColor" type="color" id="colorpicker" :value="this.settings[this.selectedIndex].color" style ="width:100%">
 				</div>
 
 				<div class="form-item" style="width:350">
@@ -54,22 +56,21 @@
 
 				<div class="form-item" style="width:350">
 					<p style ="color:Black; font-weight: bold">Window height:</p>
-					<input v-model="settings[selectedIndex].height" type="text"></input>
+					<input v-model="settings[selectedIndex].height" type="text" ></input>
 				</div>
 			</div>
 
-
-			<sro-window  :visible="titleWindow" :title="settings[0].title" :height="parseInt(settings[0].height)" :width="parseInt(settings[0].width)" @hide="titleWindow=false">
+			<sro-window :color="settings[0].color"  :visible="titleWindow" :title="settings[0].title" :height="parseInt(settings[0].height)" :width="parseInt(settings[0].width)" @hide="titleWindow=false">
 				<template v-for="(win,index) in settings">
-						<div v-drag-ch style="position: absolute;">
+						<div @click= "handleClick($event,index)" @contextmenu="handler($event,index)"  v-drag-ch style="position: absolute;">
 					    		<div v-if="win.id == 1"  >
-										<sro-btn :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-btn>
+										<sro-btn :color="win.color" :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-btn>
 									</div>
 									<div v-else-if="win.id == 2">
-										<sro-edit :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-edit>
+										<sro-edit :color="win.color" :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-edit>
 									</div>
 									<div v-else-if="win.id == 3">
-										<sro-static :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-static>
+										<sro-static :color="win.color" :id = "win.name" :visible="titleWindow" :title="win.title" :height="parseInt(win.height)" :width="parseInt(win.width)" @hide="titleWindow=false"></sro-static>
 									</div>
 						</div>
 				</template>
@@ -114,6 +115,7 @@
 
 						GFX_IMPLEMENT_DYNCREATE({{className}}, CIFMainFrame)
 						GFX_BEGIN_MESSAGE_MAP({{className}}, CIFMainFrame)
+						{{getinstancesCommands()}}
 						GFX_END_MESSAGE_MAP()
 
 						{{className}}::{{className}}(void)
@@ -142,8 +144,11 @@
 						{
 
 						}
+						{{getInstancesFunctions()}}
 					</textarea>
 			</div>
+
+			<context-menu :visible = "showContext"></context-menu>
 
 
 		</div>
@@ -157,14 +162,48 @@
 				selectedIndex: 0,
 				instanceName: '',
 				errorMsg: false,
+				showContext:false,
 				className:'CIFCustomTest',
 				message:'',
 				classId: 1,
+				lastcontextId: 0,
+				colorSelector: '#ffffff',
 				settings : [
-					{id: 0,name: 'm_window',title: 'Main Window',width:350,height:350,posX:0,posY:0}
+					{id: 0,name: 'm_window',title: 'Main Window',width:350,height:350,posX:0,posY:0,selected: 1,color:'#ffffff'}
 				]
 			},
 			methods: {
+
+				handler: function(e,index) {
+
+        this.showContext = true;
+				this.lastcontextId = index;
+
+				var menu = document.getElementById("contextMenu")
+                menu.style.display = 'block';
+                menu.style.left = e.pageX + "px";
+                menu.style.top = e.pageY + "px";
+
+				e.preventDefault();
+     		},
+				onColor(event)
+				{
+					this.settings[this.selectedIndex].color = event.target.value;
+				},
+				handleClick: function(e,index)
+				{
+					this.selectedIndex = index;
+					this.settings[index].selected = 1;
+				},
+				OnHideContext: function(e)
+				{
+					this.showContext = false;
+				},
+				changeContent(index){
+			     var opt= document.getElementById('instanceSelector').options[index];
+			     opt.value =  'box';
+			     opt.text = 'box';
+	 			},
 				add() {
 					if(this.instanceName.length <= 0)
 						this.errorMsg = true;
@@ -175,7 +214,7 @@
 																																				 : this.classId == 2 ? 220
 																																				 : this.classId == 3 ? 150
 																																				 : 120
-							,height:30,name: this.instanceName,posX:5,posY:30});
+							,height:30,name: this.instanceName,posX:5,posY:30,color:'#ffffff'});
 						else
 							this.errorMsg = true;
 					}
@@ -190,6 +229,10 @@
 					let x = this.settings.find(e=> e.id === classId);
 					return this.settings.find(e=> e.id === classId);
 				},
+				isClassIdExists: function(var1)
+				{
+					return this.settings.find(e=> e.id === var1);
+				},
 				getInstances: function(){
 					let text = "";
 					this.settings.forEach(item => {
@@ -200,6 +243,45 @@
 						else if(item.id == 3)
 							text = text + "CIFStatic* " + item.name +';\n';
 					});
+					if(this.isClassIdExists(1))
+					{
+						text = text + "private: \n";
+						this.settings.forEach(item => {
+							if(item.id == 1)
+							{
+								text = text + "void On_"+item.name+"();\n";
+							}
+						});
+					}
+					return text;
+				},
+
+				getinstancesCommands: function()
+				{
+					let text = "";
+					if(this.isClassIdExists(1))
+					{
+						this.settings.forEach((item,i) => {
+							if(item.id == 1)
+							{
+								text = text + "            ONG_COMMAND("+(i+2)+", &"+this.className+"::On_"+item.name+")\n";
+							}
+						});
+					}
+					return text;
+				},
+				getInstancesFunctions: function()
+				{
+					let text = "";
+					if(this.isClassIdExists(1))
+					{
+						this.settings.forEach((item,i) => {
+							if(item.id == 1)
+							{
+								text = text + "void "+this.className+"::On_"+item.name+"(){\n\n}\n";
+							}
+						});
+					}
 					return text;
 				},
 				getInstancesText: function()
@@ -216,10 +298,11 @@
 							if(ddj.length > 0)
 								rect  += item.name + "->TB_Func_13("+ddj+", 0, 0);\n";
 							if(item.id == 3)
-							{
 								rect += ""+item.name+"->m_FontTexture.sub_8B4400(0, 0);\n"+item.name+"->m_FontTexture.sub_8B4750(0);\n"+item.name+"->TB_Func_5(0);\n"+item.name+"->TB_Func_6(0);\n"
-							}
+							if(item.color != '#ffffff')
+								rect 	+= item.name + "->m_FontTexture.SetColor("+ item.color.replace("#","0x") +");\n";
 							rect 	+= item.name + "->SetText(L\"" + item.title + "\");\n\n";
+
 
 						}
 					});
@@ -238,7 +321,6 @@
 				isNameExists: function(){
 					return this.settings.find(e=> e.name === this.instanceName);
 				}
-
 			},
 			created() {
 				Event.$on("moveInstance", ({
@@ -252,6 +334,30 @@
 						this.settings[index].posY = parseInt(( el.offsetTop+50 + (this.settings[index].id == 2 ? 29 : 0)) *0.8091);
 						this.settings[index].posY -= parseInt(this.settings[index].posY*0.04);
 					}
+				}),
+
+				Event.$on("OnClone", ({
+					e
+				}) => {
+					let instance = this.settings[this.lastcontextId];
+					let index = 0;
+					this.instanceName = instance.name + index.toString();
+
+					while(this.isNameExists)
+					{
+						index += 1;
+						this.instanceName = instance.name + index.toString();
+					}
+
+					this.settings.push({id: instance.id,title: instance.title,width: instance.width
+					,height:instance.height,name:this.instanceName ,posX:instance.posX,posY:instance.posY,color:instance.color});
+
+				}),
+
+				Event.$on("OnDelete", ({
+
+				}) => {
+					  this.settings.splice(this.lastcontextId, 1);
 				})
 			},
 			})
